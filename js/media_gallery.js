@@ -62,18 +62,18 @@
         var img = $("<img />");
         img.attr('src', this.currentMediaItem().url);
         img.css({'position':'absolute', 'width':'100%'});
-        img.css({'transform-origin':'left top'});
+        img.css({'-webkit-transform-origin':'left top'});
         $(this.options.img_gal_element).prepend(img);
 
         img.load(function() {
           console.log('image loaded: ' + this.src);
           var position = that.chooseCorner(img);
-          img.css({'transition':'none'});
-          img.css({'transform':'scale('+scale+') translate3d('+position.startX+'px,'+position.startY+'px,0)'});
-          img.css({'transition':'transform '+(that.options.duration+that.options.fadeSpeed)+'ms '+that.options.ease3d});
+          img.css({'-webkit-transition':'none'});
+          img.css({'-webkit-transform':'scale('+scale+') translate3d('+position.startX+'px,'+position.startY+'px,0)'});
+          img.css({'-webkit-transition':'-webkit-transform '+(that.options.duration+that.options.fadeSpeed)+'ms '+that.options.ease3d});
           setTimeout(function() {
-            img.css({'transition':'transform '+(that.options.duration+that.options.fadeDuration)+'ms '+that.options.ease3d});
-            img.css({'transform':'scale(1) translate3d('+position.endX+'px,'+position.endY+'px,0)'});
+            img.css({'-webkit-transition':'-webkit-transform '+(that.options.duration+that.options.fadeDuration)+'ms '+that.options.ease3d});
+            img.css({'-webkit-transform':'scale(1) translate3d('+position.endX+'px,'+position.endY+'px,0)'});
           }, 250);
         });
 

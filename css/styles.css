@@ -17,6 +17,7 @@ div#watermark {
   right: 5%;
   bottom: 5%;
   z-index: 10000;
+  opacity: 0.4;
 }
 
 div#watermark img {
