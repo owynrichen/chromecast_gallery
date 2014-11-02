@@ -1,8 +1,20 @@
+@font-face {
+  font-family: 'Helvetica Neue';
+  font-style: normal;
+  src: local('HelveticaNeue'), local('Helvetica Neue'), url(/woff/HelveticaNeue.woff) format('woff');
+}
+
+@font-face {
+  font-family: 'Helvetica Neue UltraLight';
+  font-style: normal;
+  src: local('HelveticaNeue-UltraLight'), local('Helvetica Neue UltraLight'), url(/woff/HelveticaNeue-UltraLight.woff) format('woff');
+}
+
 @import url(/woff/HelveticaNeue-UltraLight.woff);
 @import url(/woff/HelveticaNeue.woff);
 
 body {
-  font-family: "HelveticaNeue-UltraLight", serif;
+  font-family: "Helvetica Neue UltraLight", serif;
   color: #fff;
   border: 0px;
   margin: 0px;
@@ -29,12 +41,12 @@ div#watermark img {
 }
 
 div#watermark span.pb {
-  font-family: "HelveticaNeue", serif;
+  font-family: "Helvetica Neue", serif;
   font-size: 30pt;
 }
 
 div#watermark span.pdx {
-  font-family: "HelveticaNeue-UltraLight", serif;
+  font-family: "Helvetica Neue UltraLight", serif;
   font-size: 28pt;
   margin-left: 10px;
 }
