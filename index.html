@@ -20,14 +20,12 @@ This shows a very simple Chrome sender app to show how you could support video p
 <html>
 <head>
 <title>Pure Barre Gallery Controller</title>
-<link rel="stylesheet" type="text/css" href="css/demo.css">
+<link rel="stylesheet" type="text/css" href="css/styles.css">
 <script type="text/javascript" src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js"></script>
 <script type="text/javascript" src="js/controller.js"></script>
 </head>
-<body>
-  <div>
-    <div>
-      <h2 style="display:block">Pure Barre Gallery Controller</h2>
+<body id='controller_body'>
+      <h2 style="display:block"><img src="/img/circlep_white.png" />pure barre <span class="light">gallery controller</span></h2>
       <br>
       <div style="width:80%; margin:10px;">
         <div style="margin-top:60px; float:left; width:20%;">
@@ -54,7 +52,5 @@ This shows a very simple Chrome sender app to show how you could support video p
         <textarea rows="20" cols="70" id="debugmessage">
         </textarea>
       </div>
-    </div>
-  </div>
 </body>
 </html>

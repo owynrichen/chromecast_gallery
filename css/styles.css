@@ -65,3 +65,28 @@ div#img_gal {
   overflow: hidden !important;
   position: absolute;
 }
+
+/* ----- */
+
+body#controller_body {
+  background-color: #aaaaaa;
+}
+
+h2 {
+  background-color: #e31b23;
+  font-family: "Helvetica Neue", serif;
+  font-size: 20pt;
+  color: #ffffff;
+  margin: 0;
+  padding: 5px;
+}
+
+h2 img {
+  height: 40px;
+  margin-right: 10px;
+  vertical-align: middle;
+}
+
+h2 .light {
+  font-family: "Helvetica Neue UltraLight", serif;
+}
