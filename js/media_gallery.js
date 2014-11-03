@@ -75,6 +75,7 @@
 
       Gallery.prototype.showPhoto = function() {
         $(document).trigger('media_gallery.media_started', [ this.currentMediaItem() ]);
+        $(this.options.img_gal_element).fadeIn(this.options.fadeDuration);
 
         var scale = this.options.scale;
         var that = this;
@@ -120,11 +121,16 @@
       }
 
       Gallery.prototype.playVideo = function() {
-        $(this.options.img_gal_element).fadeOut(this.options.fadeDuration);
+        var that = this;
+
+        $(this.options.img_gal_element).fadeOut(this.options.fadeDuration, function() {
+          $(that.options.img_gal_element).empty();
+        });
         $(this.options.video_element).fadeIn(this.options.fadeDuration);
 
         this.options.video_element.src = this.currentMediaItem().url;
         this.options.video_element.autoplay = true;
+        // this.options.video_element.controls = true;
         this.options.video_element.load();
       }
 
