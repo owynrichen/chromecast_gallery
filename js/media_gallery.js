@@ -31,8 +31,11 @@
         });
       }
 
-      Gallery.prototype.start = function() {
-        this.current_index = -1;
+      Gallery.prototype.start = function(start_index) {
+        if (start_index == undefined)
+          start_index = -1;
+
+        this.current_index = start_index;
         this.running = true;
         this.runNextMediaItem();
       };
@@ -40,6 +43,23 @@
       Gallery.prototype.stop = function() {
         this.running = false;
       };
+
+      Gallery.prototype.playFrom = function(id) {
+        var start_index = -1;
+
+        for (i in this.options.media) {
+          if (id == this.options.media[i].id) {
+            start_index = i - 1;
+            break;
+          }
+        }
+
+        gallery.start(start_index);
+      }
+
+      Gallery.prototype.updateMedia = function(new_media) {
+        this.options.media = new_media;
+      }
 
       Gallery.prototype.previousMediaItem = function() {
         var previous_index = this.current_index - 1;

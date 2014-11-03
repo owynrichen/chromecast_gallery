@@ -69,6 +69,7 @@ host this yourself.
     castReceiverManager.onSenderDisconnected = function (event) {
       console.log("sender disconnected");
     };
+
 // The default inactivity is normally 10 seconds, since we are encouraging you
 // to debug this receiver, we are setting it to 10 minutes. As setting a break
 // point might inadvertently trigger a timeout. The purpose of the timer is to
@@ -77,26 +78,7 @@ host this yourself.
     castReceiverManager.start({maxInactivity: 600});
 
     options = {
-        media: [
-          {
-            url: 'img/elephant.png',
-            meta: {
-              metadataType: 'PHOTO'
-            }
-          },
-          {
-            url: 'http://collwrites.com/wp-content/uploads/2012/09/pure-barre-abwork.jpg',
-            meta: {
-              metadataType: 'PHOTO'
-            }
-          },
-          {
-            url: 'video/new_to_pure_barre_make_the_most_of_your_first_class_youtube.mp4',
-            meta: {
-              metadataType: 'VIDEO'
-            }
-          }
-        ],
+        media: [],
         duration:6000,
         fadeDuration:1000,
         video_element:document.getElementById('vid'),
@@ -114,7 +96,35 @@ host this yourself.
       console.log('media_ended: ' + item.url);
     });
 
-    gallery.start();
+    $.ajax("/media").done(function(val) {
+      json_val = JSON.parse(val);
+
+      gallery.updateMedia(json_val);
+
+      gallery.start();
+    });
+
+
+    var playlistMessageBus = castReceiverManager.getCastMessageBus(
+                'urn:x-cast:com.purebarre.gallery',
+                cast.receiver.CastMessageBus.MessageType.JSON);
+
+    playlistMessageBus.onMessage = function(event) {
+                console.log('Controller message: ' + JSON.stringify(event));
+
+                switch(event.data.type) {
+                    case "REFRESH":
+                      $.ajax("/media").done(function(val) {
+                        json_val = JSON.parse(val);
+                        gallery.stop();
+                        gallery.updateMedia(json_val);
+                        gallery.start();
+                      });
+                      break;
+                    case "PLAYFROM":
+                      gallery.playFrom(event.data.id);
+                }
+            };
 
     console.log(window.navigator.appVersion.match(/Chrome\/(.*?) /)[1]);
   };

@@ -77,7 +77,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.post('/media', function(req, res) {
   console.log("POST /media");
   console.log(req.body);
-  db_prep("INSERT INTO gallery (url, metadataType, ordinal) VALUES (?,?,1)", [req.body.url, req.body.metadataType]);
+  db_prep("INSERT INTO gallery (url, metadataType, ordinal) VALUES (?,?,0)", [req.body.url, req.body.metadataType]);
 
   res.send(JSON.stringify(req.body));
 });
@@ -86,9 +86,9 @@ app.get('/media', function(req, res) {
   console.log("GET /media");
   results = [];
 
-  db_each("SELECT rowid, url, metadataType FROM gallery ORDER BY ordinal DESC",
+  db_each("SELECT rowid as id, url, metadataType, ordinal FROM gallery ORDER BY ordinal DESC",
   function(err, row) {
-    data = { url: row.url, meta: { metadataType: row.metadataType } };
+    data = { id: row.id, url: row.url, meta: { metadataType: row.metadataType }, ordinal: row.ordinal };
     results.push(data);
   },
   function(err, count) {
@@ -100,9 +100,16 @@ app.get('/media', function(req, res) {
   });
 });
 
-app.delete('/media', function(req, res) {
+app.put('/media/:id/:ordinal', function(req, res) {
+  console.log("PUT /media/" + req.param('id') + "/" + req.param('ordinal'));
+  db_prep("UPDATE gallery SET ordinal=? WHERE rowid=?", [req.param('ordinal'), req.param('id')]);
+
+  res.send("{}");
+});
+
+app.delete('/media/:id', function(req, res) {
   console.log("DELETE /media for:" + req.body);
-  db_prep("DELETE FROM gallery WHERE url=? AND metadataType=?", [req.body.url, req.body.metadataType]);
+  db_prep("DELETE FROM gallery WHERE rowid=?", [req.param('id')]);
 
   res.send(JSON.stringify(req.body));
 });

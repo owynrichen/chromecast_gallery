@@ -21,15 +21,16 @@ This shows a very simple Chrome sender app to show how you could support video p
 <head>
 <title>Pure Barre Gallery Controller</title>
 <link rel="stylesheet" type="text/css" href="css/styles.css">
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script type="text/javascript" src="//code.jquery.com/ui/1.11.2/jquery-ui.min.js"></script>
 <script type="text/javascript" src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js"></script>
 <script type="text/javascript" src="js/controller.js"></script>
 </head>
 <body id='controller_body'>
-      <h2 style="display:block"><img src="/img/circlep_white.png" />pure barre <span class="light">gallery controller</span></h2>
-      <br>
+      <h2 style="display:block"><img src="/img/circlep_white.png" />pure barre <span class="light">gallery controller</span><img id="casticon" src="img/cast_icon_idle.png" /></h2>
       <div style="width:80%; margin:10px;">
         <div style="margin-top:60px; float:left; width:20%;">
-	   <input class="vertical" type="range" min="0" max="100" step="1" onmouseup="setReceiverVolume(1-this.value/100,false);">
+	         <input class="vertical" type="range" min="0" max="100" step="1" onmouseup="setReceiverVolume(1-this.value/100,false);">
            <div class="vertical">Volume control</div>
         </div>
       </div>
@@ -37,20 +38,28 @@ This shows a very simple Chrome sender app to show how you could support video p
       <div style=" margin:10px; float:left; display:block; width:90%;">
         <button onclick="launchApp()">Launch app</button>
         <button onclick="stopApp()">Stop app</button>
-	<span id="muteText">Mute media</span>
-	<input type="checkbox" onclick="muteMedia(this);">
+      	<span id="muteText">Mute media</span>
+      	<input type="checkbox" onclick="muteMedia(this);">
       <div>
 
-      <div style="margin:10px;">
-        Progress : <input id="progress" type="range" min="1" max="100" value="1" step="1" onmouseup="seekMedia(this.value);" onmousedown="clearTimer();">
-      </div>
-      <div style="margin:10px;">
-        State : <span id="playerstate">IDLE</span>
+      <div style="margin:10px">
+        Media List
+        <div id="add_media_wrapper">
+          <input type="text" id="add_media" /><select id="add_media_type"><option id="PHOTO">PHOTO</option><option id="VIDEO">VIDEO</option></select><button onclick="addMedia()">Add</button>
+        </div>
+        <div id="media_list_wrapper">
+          <ul id="media_list">
+          </ul>
+        </div>
       </div>
 
       <div style="margin:10px;">
         <textarea rows="20" cols="70" id="debugmessage">
         </textarea>
       </div>
+      <script type="text/javascript">
+      setupMediaList();
+      loadMediaList();
+      </script>
 </body>
 </html>

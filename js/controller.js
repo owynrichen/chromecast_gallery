@@ -1,3 +1,7 @@
+var session=null;
+var currentMediaSession = null;
+var timer = null;
+
 function createTimer() {
   timer = setInterval(updateCurrentTime.bind(this), 1000);
 }
@@ -108,18 +112,6 @@ function receiverListener(e) {
 }
 
 /**
- * select a media URL
- * @param {string} m An index for media URL
- */
-function selectMedia(m) {
-  console.log("media selected" + m);
-  appendMessage("media selected" + m);
-  currentMediaIndex = m;
-  var playpauseresume = document.getElementById("playpauseresume");
-  document.getElementById('thumb').src = mediaThumbs[m];
-}
-
-/**
  * launch app and request session
  */
 function launchApp() {
@@ -158,196 +150,133 @@ function stopApp() {
   clearTimer();
 }
 
-/**
- * load media
- * @param {string} i An index for media
- */
-function loadMedia() {
-  if (!session) {
-    console.log("no session");
-    appendMessage("no session");
-    return;
-  }
-  console.log("loading..." + mediaURLs[currentMediaIndex]);
-  appendMessage("loading..." + mediaURLs[currentMediaIndex]);
-
-  var mediaInfo = new chrome.cast.media.MediaInfo(mediaURLs[currentMediaIndex]);
-  mediaInfo.contentType = 'video/mp4';
-  mediaInfo.metadata = new chrome.cast.media.MovieMediaMetadata();
-  mediaInfo.metadata.title = mediaTitles[currentMediaIndex];
-  var image = new chrome.cast.Image();
-  image.url = mediaThumbs[currentMediaIndex];
-  mediaInfo.metadata.images = [image];
-
-  var request = new chrome.cast.media.LoadRequest(mediaInfo);
-  request.autoplay = false;
-  request.currentTime = 0;
-
-  // Pass an initial playlist to the receiver
-  // as custom data with the media load request
-  // Create playlist with 2 elements
-  var playlist = [];
-  for (var i = 1; i < 2; i++)
-  {
-    var listItem = {
-      title: mediaTitles[i],
-      contentId : mediaURLs[i],
-      image: mediaThumbs[i]
-    };
-    playlist.push(listItem);
-  }
-  // Add the initial playlist as custom data for the load media request
-  request.customData = {
-    playlist: playlist
-    // Here you could add extra metadata for each media item, it is free-form
-  };
-  // load the media with custom data
-  session.loadMedia(request,
-    onMediaDiscovered.bind(this, 'loadMedia'),
-    onMediaError);
-};
-
-
-/**
- * add a video to the playlist
- */
-function addToPlaylist() {
-  if (!session) {
-    console.log("no session");
-    appendMessage("no session");
-    return;
-  }
-  console.log("adding item to playlist..." + mediaURLs[currentMediaIndex]);
-  appendMessage("adding item to playlist..." + mediaURLs[currentMediaIndex]);
-
-  var listItem = {
-      title: mediaTitles[currentMediaIndex],
-      contentId : mediaURLs[currentMediaIndex],
-      image: mediaThumbs[currentMediaIndex]
-    };
-  var message = {
-    type: 'ADD',
-    playlistItem: listItem
-  };
-  session.sendMessage('urn:x-cast:com.google.cast.sample.playlist', JSON.stringify(message));
-};
-
-
-/**
- * callback on success for loading media
- * @param {Object} e A non-null media object
- */
-function onMediaDiscovered(how, mediaSession) {
-  console.log("new media session ID:" + mediaSession.mediaSessionId);
-  appendMessage("new media session ID:" + mediaSession.mediaSessionId + ' (' + how + ')');
-  currentMediaSession = mediaSession;
-  mediaSession.addUpdateListener(onMediaStatusUpdate);
-  mediaCurrentTime = currentMediaSession.currentTime;
-  playpauseresume.innerHTML = 'Play';
-  document.getElementById("casticon").src = 'img/cast_icon_active.png';
+function setupMediaList() {
+  $(function() {
+    $("#media_list").sortable();
+    $("#media_list").disableSelection();
+    $("#media_list").on('sortupdate', mediaSortChanged);
+  });
 }
 
-/**
- * callback on media loading error
- * @param {Object} e A non-null media object
- */
-function onMediaError(e) {
-  console.log("media error");
-  appendMessage("media error");
-  document.getElementById("casticon").src = 'img/cast_icon_warning.png'; 
+function mediaSortChanged(event, ui) {
+  var new_ordinal = 0;
+  if (ui.item.next().attr('data-ordinal') != undefined)
+    new_ordinal = parseInt(ui.item.next().attr('data-ordinal')) + 1;
+
+  $.ajax({
+    type: 'PUT',
+    url: '/media/' + ui.item.attr('data-id') + '/' + new_ordinal
+  }).done(function(val) {
+    loadMediaList();
+  });
 }
 
-/**
- * callback for media status event
- * @param {Object} e A non-null media object
- */
-function onMediaStatusUpdate(isAlive) {
-  if( progressFlag ) {
-    lastCurrentTimeUpdate = new Date().getTime();
-    document.getElementById("progress").value = parseInt(100 * currentMediaSession.currentTime / currentMediaSession.media.duration);
-  }
-  document.getElementById("playerstate").innerHTML = currentMediaSession.playerState;
+function loadMediaList() {
+  $.ajax("/media").done(function(val) {
+    json_val = JSON.parse(val);
+    $("#media_list").empty();
 
-  // Have we changed media?
-  if (mediaTitles[currentMediaIndex] != currentMediaSession.media.metadata.title) {
-    document.getElementById('thumb').src = currentMediaSession.media.metadata.images[0].url;
-  }
-}
+    $.each(json_val, function(idx, entry) {
+      var li = $("<li />");
+      li.attr('data-ordinal', entry.ordinal);
+      li.attr('data-id', entry.id);
+      li.attr('id', 'media-' + entry.id);
 
-/**
- * Updates the progress bar shown for each media item.
- */
-function updateCurrentTime() {
-  console.log("updateCurrentTime");
-  if (!session || !currentMediaSession) {
-    return;
-  }
-
-  if (currentMediaSession.media && currentMediaSession.media.duration != null) {
-    document.getElementById("progress").value = parseInt(100 * currentMediaSession.getEstimatedTime() / currentMediaSession.media.duration);
-  }
-  else {
-    document.getElementById("progress").value = 0;
-    clearTimer();
-  }
-};
-
-/**
- * play media
- */
-function playMedia() {
-  if( !currentMediaSession )
-    return;
-
-  clearTimer();
-
-  var playpauseresume = document.getElementById("playpauseresume");
-  if( playpauseresume.innerHTML == 'Play' ) {
-    currentMediaSession.play(null,
-      mediaCommandSuccessCallback.bind(this,"playing started for " + currentMediaSession.sessionId),
-      onError);
-      playpauseresume.innerHTML = 'Pause';
-      //currentMediaSession.addListener(onMediaStatusUpdate);
-      appendMessage("play started");
-      createTimer();
-  }
-  else {
-    if( playpauseresume.innerHTML == 'Pause' ) {
-      currentMediaSession.pause(null,
-        mediaCommandSuccessCallback.bind(this,"paused " + currentMediaSession.sessionId),
-        onError);
-      playpauseresume.innerHTML = 'Resume';
-      appendMessage("paused");
-      createTimer();
-    }
-    else {
-      if( playpauseresume.innerHTML == 'Resume' ) {
-        currentMediaSession.play(null,
-          mediaCommandSuccessCallback.bind(this,"resumed " + currentMediaSession.sessionId),
-          onError);
-        playpauseresume.innerHTML = 'Pause';
-        appendMessage("resumed");
-        createTimer();
+      switch(entry.meta.metadataType) {
+        case "PHOTO":
+          var img = $("<img />");
+          img.css({"height":"20px"});
+          img.attr('src', entry.url);
+          li.append(img);
+          break;
+        case "VIDEO":
+          // TODO: thumbnail?
+          break;
       }
+
+      var txt = $("<span />");
+      txt.append(entry.url);
+      li.append(txt);
+
+      var trash = $("<img />");
+      trash.css({"height":"20px", "float":"right"});
+      trash.attr('src', '/img/icon-trash-b-128.png');
+      trash.attr('data-id',entry.id);
+      trash.on('click', function() {
+        var id = $(this).attr('data-id');
+        deleteMedia(id);
+      });
+      li.append(trash);
+
+      var play = $("<img />");
+      play.css({"height":"20px", "float":"right"});
+      play.attr('src', '/img/23_Play-128.png');
+      play.attr('data-id',entry.id);
+      play.on('click', function() {
+        var id = $(this).attr('data-id');
+        playFromItem(id);
+      });
+      li.append(play);
+      $("#media_list").append(li);
+    });
+  });
+}
+
+function addMedia() {
+  var url = $("#add_media").val();
+  var type = $("#add_media_type").val();
+  var post_body = {
+    url: url,
+    metadataType: type
+  };
+  $.post("/media", post_body, function() {
+    loadMediaList();
+  });
+}
+
+function deleteMedia(id) {
+  $.ajax({
+    type: "DELETE",
+    url: "/media/" + id,
+    success: function() {
+      loadMediaList();
     }
-  }
+  })
 }
 
-/**
- * stop media
- */
-function stopMedia() {
-  if( !currentMediaSession )
+function updateRemoteGallery() {
+  if (!session) {
+    console.log("no session");
+    appendMessage("no session");
     return;
+  }
 
-  currentMediaSession.stop(null,
-    mediaCommandSuccessCallback.bind(this,"stopped " + currentMediaSession.sessionId),
-    onError);
-  var playpauseresume = document.getElementById("playpauseresume");
-  playpauseresume.innerHTML = 'Play';
-  appendMessage("media stopped");
-  clearTimer();
+  var message = {
+    type: 'REFRESH'
+  };
+  var msg = JSON.stringify(message);
+  session.sendMessage('urn:x-cast:com.purebarre.gallery', msg);
+  console.log("sendMessage urn:x-cast:com.purebarre.gallery(" + msg + ")");
+  appendMessage("sendMessage urn:x-cast:com.purebarre.gallery(" + msg + ")");
 }
+
+function playFromItem(id) {
+  if (!session) {
+    console.log("no session");
+    appendMessage("no session");
+    return;
+  }
+
+  var message = {
+    type: 'PLAYFROM',
+    id: id
+  };
+  var msg = JSON.stringify(message);
+  session.sendMessage('urn:x-cast:com.purebarre.gallery', msg);
+  console.log("sendMessage urn:x-cast:com.purebarre.gallery(" + msg + ")");
+  appendMessage("sendMessage urn:x-cast:com.purebarre.gallery(" + msg + ")");
+}
+
 
 /**
  * set media volume
@@ -411,33 +340,6 @@ function muteMedia(cb) {
 }
 
 /**
- * seek media position
- * @param {Number} pos A number to indicate percent
- */
-function seekMedia(pos) {
-  console.log('Seeking ' + currentMediaSession.sessionId + ':' +
-    currentMediaSession.mediaSessionId + ' to ' + pos + "%");
-  progressFlag = 0;
-  var request = new chrome.cast.media.SeekRequest();
-  request.currentTime = pos * currentMediaSession.media.duration / 100;
-  currentMediaSession.seek(request,
-    onSeekSuccess.bind(this, 'media seek done'),
-    onError);
-  createTimer();
-}
-
-/**
- * callback on success for media commands
- * @param {string} info A message string
- * @param {Object} e A non-null media object
- */
-function onSeekSuccess(info) {
-  console.log(info);
-  appendMessage(info);
-  setTimeout(function(){progressFlag = 1},1500);
-}
-
-/**
  * callback on success for media commands
  * @param {string} info A message string
  * @param {Object} e A non-null media object
@@ -456,3 +358,45 @@ function appendMessage(message) {
   var dw = document.getElementById("debugmessage");
   dw.innerHTML += '\n' + JSON.stringify(message);
 };
+
+/**
+ * callback on success for loading media
+ * @param {Object} e A non-null media object
+ */
+
+function onMediaDiscovered(how, mediaSession) {
+  console.log("new media session ID:" + mediaSession.mediaSessionId);
+  appendMessage("new media session ID:" + mediaSession.mediaSessionId + ' (' + how + ')');
+  currentMediaSession = mediaSession;
+  mediaSession.addUpdateListener(onMediaStatusUpdate);
+  mediaCurrentTime = currentMediaSession.currentTime;
+  playpauseresume.innerHTML = 'Play';
+  document.getElementById("casticon").src = 'images/cast_icon_active.png';
+}
+
+/**
+ * callback on media loading error
+ * @param {Object} e A non-null media object
+ */
+function onMediaError(e) {
+  console.log("media error");
+  appendMessage("media error");
+  document.getElementById("casticon").src = 'images/cast_icon_warning.png';
+}
+
+/**
+ * callback for media status event
+ * @param {Object} e A non-null media object
+ */
+function onMediaStatusUpdate(isAlive) {
+  if( progressFlag ) {
+    lastCurrentTimeUpdate = new Date().getTime();
+    document.getElementById("progress").value = parseInt(100 * currentMediaSession.currentTime / currentMediaSession.media.duration);
+  }
+  document.getElementById("playerstate").innerHTML = currentMediaSession.playerState;
+
+  // Have we changed media?
+  if (mediaTitles[currentMediaIndex] != currentMediaSession.media.metadata.title) {
+    document.getElementById('thumb').src = currentMediaSession.media.metadata.images[0].url;
+  }
+}
