@@ -13,10 +13,14 @@ Depends on jQuery for the media_gallery & receiver, and jQuery and jQueryUI for
 the controller.
 
 To get it up and running, simply run:
-TODO: outline how to setup the npm package.json stuff and test it...
 
 ```
+npm install
 node server.js
 ```
 
 Yes, I know there are no tests right now.  Sometime I will get around to it :).
+
+If you're interested in learning more about the Google Cast SDK, take a look at
+https://developers.google.com/cast/, or to see some helpful example projects
+for which some of this was based, check out https://github.com/googlecast/.

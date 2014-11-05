@@ -1,5 +1,5 @@
 {
-  "name": "pure barre chromecast gallery",
+  "name": "pure_barre_chromecast_gallery",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -9,7 +9,7 @@
     "body-parser": "^1.5.2",
     "express": "^4.8.0",
     "method-override": "^2.1.2",
-    "sqlite3":"^1.0.0",
-    "forever":"^1.0.0"
+    "sqlite3":"^3.0.0",
+    "forever":"^0.13.0"
   }
 }
