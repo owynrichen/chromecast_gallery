@@ -54,7 +54,8 @@ limitations under the License.
         img_gal_element : document.getElementById('img_gal'),
         duration : 6000,
         fadeDuration: 400,
-        scale: 1.25
+        scale: 1.25,
+        debug: false
       }
 
       /**
@@ -84,6 +85,15 @@ limitations under the License.
           $(document).trigger('media_gallery.media_ended', [ that.currentMediaItem() ]);
           that.runNextMediaItem();
         });
+
+	this.log("Running Gallery with options:");
+        this.log("{");
+        this.log("duration: " + this.options.duration);
+        this.log("fadeDuration: " + this.options.fadeDuration);
+        this.log("scale: " + this.options.scale);
+        this.log("debug: " + this.options.debug);
+        this.log("media: " + JSON.stringify(this.options.media));
+        this.log("}");
       }
 
       /**
@@ -96,7 +106,7 @@ limitations under the License.
         if (start_index == undefined)
           start_index = -1;
 
-        this.current_index = start_index - 1;
+        this.current_index = start_index;
         this.running = true;
         this.runNextMediaItem();
       };
@@ -127,6 +137,8 @@ limitations under the License.
           }
         }
 
+        this.log("playFrom(" + id + ") called returning media index of: " + (start_index + 1));
+
         gallery.start(start_index);
       }
 
@@ -136,6 +148,7 @@ limitations under the License.
        * new_media: {Array} the array of media,
        */
       Gallery.prototype.updateMedia = function(new_media) {
+	this.log("updating Gallery media with: " + JSON.stringify(new_media));
         this.options.media = new_media;
       }
 
@@ -242,9 +255,11 @@ limitations under the License.
 
         switch(this.currentMediaItem().meta.metadataType) {
           case 'PHOTO':
+	    this.log("Playing photo " + this.currentMediaItem().url);
             this.showPhoto();
             break;
           case 'VIDEO':
+	    this.log("Playing video " + this.currentMediaItem().url);
             this.playVideo();
             break;
         }
@@ -267,8 +282,6 @@ limitations under the License.
 
           var w = image.width();
           var h = image.height();
-
-          //console.log(sw+ ", " + this.width);
 
           var corners = [
               {x:0,y:0},
@@ -293,10 +306,13 @@ limitations under the License.
               endY: end.y * (h - sh)
           }
 
-        //
-        //  console.log(coordinates.startX + " , "+coordinates.startY + " , " +coordinates.endX + " , " +coordinates.endY);
-
           return coordinates;
+      }
+
+      Gallery.prototype.log = function(entry) {
+	  if (this.options.debug) {
+	    console.log(entry);
+          }
       }
 
       return new Gallery(options);

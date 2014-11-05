@@ -81,6 +81,7 @@ host this yourself.
         video_element:document.getElementById('vid'),
         img_gal_element:document.getElementById('img_gal'),
         ease3d:'cubic-bezier(0.445, 0.050, 0.550, 0.950)',
+        debug: true
     };
 
     var gallery = $(document).media_gallery(options);
@@ -94,10 +95,13 @@ host this yourself.
     });
 
     $.ajax("/media").done(function(val) {
+      gallery.log("complete fetch media");
       json_val = JSON.parse(val);
 
+      gallery.log("update media");
       gallery.updateMedia(json_val);
 
+      gallery.log("starting gallery");
       gallery.start();
     });
 
