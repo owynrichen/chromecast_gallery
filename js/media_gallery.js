@@ -1,5 +1,52 @@
+/**
+Copyright (C) 2014 Owyn Richen. All Rights Reserved.
+
+Portions shamelessly based on work (C) 2013 ToymakerLabs under
+the MIT license.
+(https://github.com/toymakerlabs/kenburns)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+**/
+
 (function($, window, document) {
   $.fn.extend({
+    /**
+     * Wires up a media gallery, typically associated with
+     * the document object, since the elements that matter
+     * are passed via the options section.
+     * @param {Object} options to pass to the media gallery
+     * including:
+     * media: the array of media objects, note no validation is performed
+     * video_element: the DOM object for the <video> tag
+     * img_gal_element: the DOM object for the <div> to put
+     * the images in.
+     * duration: the length of time an image is on screen
+     * fadeDuration: how fast images or video fade to eachother
+     * scale: the default size of images
+     *
+     * The structure of an entry in the media[] array is
+     * as follows:
+     * {
+     *   id: {Integer} corresponds to the sqlite3 rowid returned
+     *   url: {String} the full url to the media asset
+     *   meta: {Object} {
+     *     metadataType: {String} 'PHOTO' | 'VIDEO' are supported
+     *   }
+     *   ordinal: {Integer} the sort order of the object
+     * }
+     *
+     * @returns a Gallery object
+     */
     media_gallery: function(options) {
       var defaults = {
         media : [],
@@ -10,7 +57,15 @@
         scale: 1.25
       }
 
-      function Gallery(element, options) {
+      /**
+       * A JS Gallery that cycles through photos
+       * and transitions to videos.  It associates
+       * itself and events with the document object.
+       * @param {Object} options to setup the media gallery.
+       * Check the docs for the parent media_gallery
+       * function for a description of options.
+       */
+      function Gallery(options) {
         this.options = $.extend({}, defaults, options);
         this.current_index = 0;
         this.running = false;
@@ -31,19 +86,37 @@
         });
       }
 
+      /**
+       * The start() function begins the gallery cycle
+       * @param {Integer} start_index the index of the
+       * media[] array to start from, if omitted
+       * starts from the beginning of the list
+       */
       Gallery.prototype.start = function(start_index) {
         if (start_index == undefined)
           start_index = -1;
 
-        this.current_index = start_index;
+        this.current_index = start_index - 1;
         this.running = true;
         this.runNextMediaItem();
       };
 
+      /**
+       * The stop() function tells the gallery to stop
+       * after the currently running photo/video
+       */
       Gallery.prototype.stop = function() {
         this.running = false;
       };
 
+      /**
+       * The playFrom() function plays the gallery
+       * from a particular entry, based on ID.
+       * NOTE: Running this on a currently running
+       * gallery will yield odd results
+       * @param {Integer} id the ID of the media item
+       * to
+       */
       Gallery.prototype.playFrom = function(id) {
         var start_index = -1;
 
@@ -57,10 +130,19 @@
         gallery.start(start_index);
       }
 
+      /**
+       * Updates the array of currently running media.  NOTE: there
+       * is no validation performed.
+       * new_media: {Array} the array of media,
+       */
       Gallery.prototype.updateMedia = function(new_media) {
         this.options.media = new_media;
       }
 
+      /**
+       * Returns the item previous to the currently running
+       * media item
+       */
       Gallery.prototype.previousMediaItem = function() {
         var previous_index = this.current_index - 1;
         if (previous_index < 0)
@@ -69,10 +151,17 @@
         return this.options.media[previous_index];
       }
 
+      /**
+       * Returns the currently running media item
+       */
       Gallery.prototype.currentMediaItem = function() {
         return this.options.media[this.current_index];
       }
 
+      /**
+       * internal method, shows the current media item
+       * assuming it's a photo
+       */
       Gallery.prototype.showPhoto = function() {
         $(document).trigger('media_gallery.media_started', [ this.currentMediaItem() ]);
         $(this.options.img_gal_element).fadeIn(this.options.fadeDuration);
@@ -120,6 +209,10 @@
         }, this.options.duration);
       }
 
+      /**
+       * internal method, plays the current media item
+       * assuming it's a video
+       */
       Gallery.prototype.playVideo = function() {
         var that = this;
 
@@ -134,6 +227,11 @@
         this.options.video_element.load();
       }
 
+      /**
+       * internal method, identifies the next media item
+       * updates the current index, and calls internal methods
+       * showPhoto() or showVideo() based on the type
+       */
       Gallery.prototype.runNextMediaItem = function() {
         if (!this.running)
           return;
@@ -152,6 +250,11 @@
         }
       }
 
+      /**
+       * internal method, shamelessly stolen from the kenburns
+       * jQuery plugin by Toymakerlabs, to randomly choose
+       * a corner for the Ken Burns effect transition
+       */
       Gallery.prototype.chooseCorner = function(image) {
           var scale = this.options.scale;
 
@@ -196,7 +299,7 @@
           return coordinates;
       }
 
-      return new Gallery(document, options);
+      return new Gallery(options);
     }
   });
 })($, window, document);

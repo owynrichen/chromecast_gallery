@@ -1,6 +1,7 @@
-
 /**
-Copyright (C) 2013 Google Inc. All Rights Reserved.
+Copyright (C) 2014 Owyn Richen. All Rights Reserved.
+
+Based on work (C) 2013 Google Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,6 +22,12 @@ var express = require("express"),
 var methodOverride = require('method-override');
 var bodyParser = require('body-parser');
 var sqlite3 = require('sqlite3').verbose();
+
+/*
+
+Helper functions for logging and sqlite3 access
+
+*/
 
 function log(msg) {
   if (msg != null)
@@ -59,9 +66,15 @@ function db_prep(statement, vals, func) {
   }, func);
 }
 
+/*
+
+Express.js wireup
+
+*/
+
 //CORS middleware
 var allowCrossDomain = function(req, res, next) {
-    res.header('Access-Control-Allow-Origin', '*'); // NOT SAFE FOR PRODUCTION
+    res.header('Access-Control-Allow-Origin', '*'); // NOT SAFE FOR HOSTS ON A PUBLIC NETWORK
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
     res.header('Access-Control-Allow-Headers', 'Content-Type');
 
@@ -77,7 +90,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.post('/media', function(req, res) {
   console.log("POST /media");
   console.log(req.body);
-  db_prep("INSERT INTO gallery (url, metadataType, ordinal) VALUES (?,?,0)", [req.body.url, req.body.metadataType]);
+
+  var count = 0;
+  db_each("SELECT COUNT(1) as count FROM gallery", function (err, row) {
+     count = row.count;
+  });
+  db_prep("INSERT INTO gallery (url, metadataType, ordinal) VALUES (?,?,?)", [req.body.url, req.body.metadataType, count + 1]);
 
   res.send(JSON.stringify(req.body));
 });
@@ -102,6 +120,7 @@ app.get('/media', function(req, res) {
 
 app.put('/media/:id/:ordinal', function(req, res) {
   console.log("PUT /media/" + req.param('id') + "/" + req.param('ordinal'));
+  // TODO: this doesn't actually sort things correctly
   db_prep("UPDATE gallery SET ordinal=? WHERE rowid=?", [req.param('ordinal'), req.param('id')]);
 
   res.send("{}");
@@ -118,4 +137,5 @@ db_run("CREATE TABLE IF NOT EXISTS gallery (url TEXT, metadataType TEXT, ordinal
 
 console.log("Connecting to sqlite3 datafile: " + __dirname + "/gallery_db.sqlite3");
 console.log("Starting server on port: " + port);
+
 app.listen(port);

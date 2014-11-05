@@ -1,3 +1,22 @@
+/**
+Copyright (C) 2014 Owyn Richen. All Rights Reserved.
+
+based on Cast-VideoPlaylist-Chrome (C) 2014 Google Inc.
+(https://github.com/googlecast/CastVideosPlaylist-chrome)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+**/
+
 var session=null;
 var currentMediaSession = null;
 var timer = null;
@@ -158,6 +177,11 @@ function setupMediaList() {
   });
 }
 
+/**
+ * Adds new media to the sqlite3 database via POST
+ * to the /media endpoint
+ */
+
 function mediaSortChanged(event, ui) {
   var new_ordinal = 0;
   if (ui.item.next().attr('data-ordinal') != undefined)
@@ -170,6 +194,10 @@ function mediaSortChanged(event, ui) {
     loadMediaList();
   });
 }
+
+/**
+ * Refreshes the media list from sqlite3 via the /media endpoint
+ */
 
 function loadMediaList() {
   $.ajax("/media").done(function(val) {
@@ -222,6 +250,11 @@ function loadMediaList() {
   });
 }
 
+/**
+ * Adds new media to the sqlite3 database via POST
+ * to the /media endpoint
+ */
+
 function addMedia() {
   var url = $("#add_media").val();
   var type = $("#add_media_type").val();
@@ -234,6 +267,12 @@ function addMedia() {
   });
 }
 
+/**
+ * Deletes an entry from sqlite3, by ID via a DELETE
+ * call to the /media endpoint
+ * @param {Integer} id the ID of the record to delete
+ */
+
 function deleteMedia(id) {
   $.ajax({
     type: "DELETE",
@@ -243,6 +282,11 @@ function deleteMedia(id) {
     }
   })
 }
+
+/**
+ * tell the receiver to refresh it's local list
+ * from the /media endpoint
+ */
 
 function updateRemoteGallery() {
   if (!session) {
@@ -259,6 +303,12 @@ function updateRemoteGallery() {
   console.log("sendMessage urn:x-cast:com.purebarre.gallery(" + msg + ")");
   appendMessage("sendMessage urn:x-cast:com.purebarre.gallery(" + msg + ")");
 }
+
+/**
+ * tell the receiver to start playing from a particular
+ * item
+ * @param {Integer} id the ID of the object
+ */
 
 function playFromItem(id) {
   if (!session) {
