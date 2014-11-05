@@ -110,8 +110,6 @@ function sessionUpdateListener(isAlive) {
   if (!isAlive) {
     session = null;
     document.getElementById("casticon").src = 'img/cast_icon_idle.png';
-    var playpauseresume = document.getElementById("playpauseresume");
-    playpauseresume.innerHTML = 'Play';
     clearTimer();
   }
 };
