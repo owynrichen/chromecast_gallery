@@ -47,6 +47,18 @@ body {
   overflow: hidden !important;
 }
 
+div#gradient {
+  width: 100%;
+  height: 0%;
+  position: absolute;
+  bottom: 0%;
+  right: 0%;
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,0)), color-stop(100%,rgba(0,0,0,0.8))); /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,0.8) 100%); /* Chrome10+,Safari5.1+ */
+  background: linear-gradient(to bottom, rgba(0,0,0,0) 0%,rgba(0,0,0,0.8) 100%); /* W3C */
+  z-index: 9999;
+}
+
 div#watermark {
   color: #fff;
   position: absolute;
@@ -62,17 +74,21 @@ div#watermark img {
   vertical-align: middle;
   margin-right: 10px;
   margin-bottom: 10px;
+  box-shadow: 0 0 10px #000;
+  border-radius: 173.5px;
 }
 
 div#watermark span.pb {
   font-family: "Helvetica Neue", serif;
   font-size: 30pt;
+  text-shadow: 0 0 10px #000;
 }
 
 div#watermark span.pdx {
   font-family: "Helvetica Neue UltraLight", serif;
   font-size: 28pt;
   margin-left: 10px;
+  text-shadow: 0 0 10px #000;
 }
 
 video {
