@@ -86,7 +86,7 @@ limitations under the License.
           that.runNextMediaItem();
         });
 
-	this.log("Running Gallery with options:");
+        this.log("Running Gallery with options:");
         this.log("{");
         this.log("duration: " + this.options.duration);
         this.log("fadeDuration: " + this.options.fadeDuration);
@@ -139,7 +139,7 @@ limitations under the License.
 
         this.log("playFrom(" + id + ") called returning media index of: " + (start_index + 1));
 
-        gallery.start(start_index);
+        this.start(start_index);
       }
 
       /**
@@ -148,7 +148,7 @@ limitations under the License.
        * new_media: {Array} the array of media,
        */
       Gallery.prototype.updateMedia = function(new_media) {
-	this.log("updating Gallery media with: " + JSON.stringify(new_media));
+        this.log("updating Gallery media with: " + JSON.stringify(new_media));
         this.options.media = new_media;
       }
 
@@ -310,9 +310,9 @@ limitations under the License.
       }
 
       Gallery.prototype.log = function(entry) {
-	  if (this.options.debug) {
-	    console.log(entry);
-          }
+        if (this.options.debug) {
+          console.log(entry);
+        }
       }
 
       return new Gallery(options);

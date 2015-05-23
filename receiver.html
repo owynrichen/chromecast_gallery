@@ -51,30 +51,26 @@ host this yourself.
 
 <script type="text/javascript">
   window.onload = function() {
-// Turn on debugging so that you can see what is going on.  Please turn this off
-// on your production receivers.  Especially if there may be any personally
-// identifiable information in the log.
+    // Turn on debugging so that you can see what is going on.  Please turn this off
+    // on your production receivers.  Especially if there may be any personally
+    // identifiable information in the log.
     cast.receiver.logger.setLevelValue(cast.receiver.LoggerLevel.DEBUG);
 
     console.log('Starting media application');
     window.mediaElement = document.getElementById('vid');
-// Create the media manager. This will handle all media messages by default.
+
+    // Create the media manager. This will handle all media messages by default.
     window.mediaManager = new cast.receiver.MediaManager(window.mediaElement);
 
-// Start the system
-    console.log('Application is ready, starting system');
+    console.log('Application is ready');
     window.castReceiverManager = cast.receiver.CastReceiverManager.getInstance();
     castReceiverManager.onSenderDisconnected = function (event) {
       console.log("sender disconnected");
     };
 
-// The default inactivity is normally 10 seconds, since we are encouraging you
-// to debug this receiver, we are setting it to 10 minutes. As setting a break
-// point might inadvertently trigger a timeout. The purpose of the timer is to
-// speed the recognition of disconnection of a sender.  As the TCP/IP standard
-// mechanisms can be quite slow.
-    castReceiverManager.start({maxInactivity: 600});
+    // Wire up the gallery
 
+    console.log("Wiring up the Gallery DOM elements");
     options = {
         media: [],
         duration:6000,
@@ -85,7 +81,7 @@ host this yourself.
         debug: true,
         scale: 1.1
     };
-
+    
     var gallery = $(document).media_gallery(options);
 
     $(document).on('media_gallery.media_started', function(event, item) {
@@ -96,18 +92,8 @@ host this yourself.
       console.log('media_ended: ' + item.url);
     });
 
-    $.ajax("/media").done(function(val) {
-      gallery.log("complete fetch media");
-      json_val = JSON.parse(val);
 
-      gallery.log("update media");
-      gallery.updateMedia(json_val);
-
-      gallery.log("starting gallery");
-      gallery.start();
-    });
-
-
+    console.log("Wiring up com.purebarre.gallery message bus");
     var playlistMessageBus = castReceiverManager.getCastMessageBus(
                 'urn:x-cast:com.purebarre.gallery',
                 cast.receiver.CastMessageBus.MessageType.JSON);
@@ -128,6 +114,27 @@ host this yourself.
                       gallery.playFrom(event.data.id);
                 }
             };
+
+    // Start the system
+    // The default inactivity is normally 10 seconds, since we are encouraging you
+    // to debug this receiver, we are setting it to 10 minutes. As setting a break
+    // point might inadvertently trigger a timeout. The purpose of the timer is to
+    // speed the recognition of disconnection of a sender.  As the TCP/IP standard
+    // mechanisms can be quite slow.
+
+    console.log("Starting the system");
+    castReceiverManager.start({maxInactivity: 600});
+
+    $.ajax("/media").done(function(val) {
+      gallery.log("complete fetch media");
+      json_val = JSON.parse(val);
+
+      gallery.log("update media");
+      gallery.updateMedia(json_val);
+
+      gallery.log("starting gallery");
+      gallery.start();
+    });
 
     console.log(window.navigator.appVersion.match(/Chrome\/(.*?) /)[1]);
   };
