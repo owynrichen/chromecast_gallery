@@ -81,7 +81,7 @@ host this yourself.
         debug: true,
         scale: 1.1
     };
-    
+
     var gallery = $(document).media_gallery(options);
 
     $(document).on('media_gallery.media_started', function(event, item) {
@@ -92,6 +92,18 @@ host this yourself.
       console.log('media_ended: ' + item.url);
     });
 
+    function refreshMedia() {
+      $.ajax("/media").done(function(val) {
+        gallery.log("complete fetch media");
+        json_val = JSON.parse(val);
+
+        gallery.log("update media");
+        gallery.updateMedia(json_val);
+
+        gallery.log("starting gallery");
+        gallery.start();
+      });
+    }
 
     console.log("Wiring up com.purebarre.gallery message bus");
     var playlistMessageBus = castReceiverManager.getCastMessageBus(
@@ -103,15 +115,11 @@ host this yourself.
 
                 switch(event.data.type) {
                     case "REFRESH":
-                      $.ajax("/media").done(function(val) {
-                        json_val = JSON.parse(val);
-                        gallery.stop();
-                        gallery.updateMedia(json_val);
-                        gallery.start();
-                      });
+                      refreshMedia();
                       break;
                     case "PLAYFROM":
                       gallery.playFrom(event.data.id);
+                      break;
                 }
             };
 
@@ -125,16 +133,7 @@ host this yourself.
     console.log("Starting the system");
     castReceiverManager.start({maxInactivity: 600});
 
-    $.ajax("/media").done(function(val) {
-      gallery.log("complete fetch media");
-      json_val = JSON.parse(val);
-
-      gallery.log("update media");
-      gallery.updateMedia(json_val);
-
-      gallery.log("starting gallery");
-      gallery.start();
-    });
+    refreshMedia();
 
     console.log(window.navigator.appVersion.match(/Chrome\/(.*?) /)[1]);
   };

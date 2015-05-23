@@ -190,6 +190,7 @@ function mediaSortChanged(event, ui) {
     url: '/media/' + ui.item.attr('data-id') + '/' + new_ordinal
   }).done(function(val) {
     loadMediaList();
+    updateRemoteGallery();
   });
 }
 
@@ -262,6 +263,7 @@ function addMedia() {
   };
   $.post("/media", post_body, function() {
     loadMediaList();
+    updateRemoteGallery();
   });
 }
 
@@ -277,6 +279,7 @@ function deleteMedia(id) {
     url: "/media/" + id,
     success: function() {
       loadMediaList();
+      updateRemoteGallery();
     }
   })
 }
