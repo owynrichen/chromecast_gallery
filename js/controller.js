@@ -176,8 +176,10 @@ function setupMediaList() {
 }
 
 /**
- * Adds new media to the sqlite3 database via POST
- * to the /media endpoint
+ * Updates the sort order of media via PUT
+ * to the /media/{id} endpoint.
+ *
+ * TODO: This is buggy and doesn't really work yet...
  */
 
 function mediaSortChanged(event, ui) {
