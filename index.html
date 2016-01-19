@@ -63,6 +63,13 @@ This shows a very simple Chrome sender app to show how you could support video p
       <script type="text/javascript">
       setupMediaList();
       loadMediaList();
+      window.fbAsyncInit = function() {
+          FB.init({
+            appId      : '1040553149342803',
+            xfbml      : false,
+            version    : 'v2.5'
+          });
+        };
       </script>
 </body>
 </html>

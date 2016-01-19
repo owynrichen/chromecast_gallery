@@ -43,13 +43,13 @@ if (!chrome.cast || !chrome.cast.isAvailable) {
  * initialization
  */
 function initializeCastApi() {
-  var applicationID = 'BDF7287F';
-  var sessionRequest = new chrome.cast.SessionRequest(applicationID);
-  var apiConfig = new chrome.cast.ApiConfig(sessionRequest,
-    sessionListener,
-    receiverListener);
-
-  chrome.cast.initialize(apiConfig, onInitSuccess, onError);
+  // var applicationID = 'BDF7287F';
+  // var sessionRequest = new chrome.cast.SessionRequest(applicationID);
+  // var apiConfig = new chrome.cast.ApiConfig(sessionRequest,
+  //   sessionListener,
+  //   receiverListener);
+  //
+  // chrome.cast.initialize(apiConfig, onInitSuccess, onError);
 };
 
 /**

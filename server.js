@@ -19,6 +19,25 @@ var express = require("express"),
     app     = express(),
     port    = 8080;
 
+var config = require('./config.js');
+var FB = require('fb');
+
+console.log("Fetching access token for config: " + JSON.stringify(config))
+FB.api('oauth/access_token', {
+  client_id: config.facebook.app_id,
+  client_secret: config.facebook.app_secret,
+  grant_type: 'client_credentials'
+}, function(res) {
+  if (!res || res.error) {
+    console.log(!res ? 'error occurred' : res.error);
+    return;
+  }
+
+  console.log("Access Token: " + res.access_token);
+
+  FB.setAccessToken(res.access_token);
+});
+
 var methodOverride = require('method-override');
 var bodyParser = require('body-parser');
 var sqlite3 = require('sqlite3').verbose();
@@ -66,6 +85,42 @@ function db_prep(statement, vals, func) {
   }, func);
 }
 
+var results = undefined;
+function fbphotos(callback) {
+
+  function inner(limit, after, res) {
+    params = {"fields":"images,name,id", "limit" : limit};
+    if (after !== 'undefined') {
+      params["after"] = after;
+    }
+    // console.log(JSON.stringify(params));
+    FB.api(
+    '/1669682333317781/photos',
+    'GET',
+    params,
+    function(response) {
+      for (var index in response.data) {
+        var photo = response.data[index];
+        data = { id: photo.id, url: photo.images[0].source, meta: { metadataType: "PHOTO", width: photo.images[0].width, height: photo.images[0].height }, ordinal: 1 };
+        res.push(data);
+      }
+
+      if (response.paging !== undefined) {
+        inner(limit, response.paging["cursors"]["after"], res);
+      } else {
+        callback(res);
+      }
+    });
+  }
+
+  if (results === undefined) {
+    results = [];
+    inner(100, undefined, results);
+  } else {
+    callback(results);
+  }
+}
+
 /*
 
 Express.js wireup
@@ -102,19 +157,20 @@ app.post('/media', function(req, res) {
 
 app.get('/media', function(req, res) {
   console.log("GET /media");
-  results = [];
 
-  db_each("SELECT rowid as id, url, metadataType, ordinal FROM gallery ORDER BY ordinal DESC",
-  function(err, row) {
-    data = { id: row.id, url: row.url, meta: { metadataType: row.metadataType }, ordinal: row.ordinal };
-    results.push(data);
-  },
-  function(err, count) {
-    log(err);
-    console.log(results);
-    console.log(count + " results returned");
+  fbphotos(function(results) {
+    db_each("SELECT rowid as id, url, metadataType, ordinal FROM gallery ORDER BY ordinal DESC",
+    function(err, row) {
+      data = { id: row.id, url: row.url, meta: { metadataType: row.metadataType }, ordinal: row.ordinal };
+      results.push(data);
+    },
+    function(err, count) {
+      log(err);
+      console.log(results);
+      console.log(results.length + " results returned");
 
-    res.send(JSON.stringify(results));
+      res.send(JSON.stringify(results));
+    });
   });
 });
 

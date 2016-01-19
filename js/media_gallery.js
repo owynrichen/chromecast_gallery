@@ -186,6 +186,10 @@ limitations under the License.
         img.attr('src', this.currentMediaItem().url);
         img.css({'position':'absolute', 'width':'100%'});
         img.css({'-webkit-transform-origin':'left top'});
+        if (this.currentMediaItem().meta.width !== undefined) {
+          mult = window.innerWidth / this.currentMediaItem().meta.width;
+          img.css({'width': (this.currentMediaItem().meta.width * mult) + "px"});
+        }
         $(this.options.img_gal_element).prepend(img);
 
         img.load(function() {
@@ -252,6 +256,8 @@ limitations under the License.
         this.current_index++;
         if (this.current_index >= this.options.media.length)
           this.current_index = 0;
+
+        console.log(JSON.stringify(this.currentMediaItem()))
 
         switch(this.currentMediaItem().meta.metadataType) {
           case 'PHOTO':

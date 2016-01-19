@@ -53,26 +53,26 @@ host this yourself.
 // Turn on debugging so that you can see what is going on.  Please turn this off
 // on your production receivers.  Especially if there may be any personally
 // identifiable information in the log.
-    cast.receiver.logger.setLevelValue(cast.receiver.LoggerLevel.DEBUG);
+//    cast.receiver.logger.setLevelValue(cast.receiver.LoggerLevel.DEBUG);
 
     console.log('Starting media application');
     window.mediaElement = document.getElementById('vid');
 // Create the media manager. This will handle all media messages by default.
-    window.mediaManager = new cast.receiver.MediaManager(window.mediaElement);
+    // window.mediaManager = new cast.receiver.MediaManager(window.mediaElement);
 
 // Start the system
-    console.log('Application is ready, starting system');
-    window.castReceiverManager = cast.receiver.CastReceiverManager.getInstance();
-    castReceiverManager.onSenderDisconnected = function (event) {
-      console.log("sender disconnected");
-    };
-
-// The default inactivity is normally 10 seconds, since we are encouraging you
-// to debug this receiver, we are setting it to 10 minutes. As setting a break
-// point might inadvertently trigger a timeout. The purpose of the timer is to
-// speed the recognition of disconnection of a sender.  As the TCP/IP standard
-// mechanisms can be quite slow.
-    castReceiverManager.start({maxInactivity: 600});
+//     console.log('Application is ready, starting system');
+//     window.castReceiverManager = cast.receiver.CastReceiverManager.getInstance();
+//     castReceiverManager.onSenderDisconnected = function (event) {
+//       console.log("sender disconnected");
+//     };
+//
+// // The default inactivity is normally 10 seconds, since we are encouraging you
+// // to debug this receiver, we are setting it to 10 minutes. As setting a break
+// // point might inadvertently trigger a timeout. The purpose of the timer is to
+// // speed the recognition of disconnection of a sender.  As the TCP/IP standard
+// // mechanisms can be quite slow.
+//     castReceiverManager.start({maxInactivity: 600});
 
     options = {
         media: [],
@@ -106,29 +106,39 @@ host this yourself.
       gallery.start();
     });
 
+    setInterval(function() {
+      gallery.log("refreshing media");
+      $.ajax("/media").done(function(val) {
+        json_val = JSON.parse(val);
+        gallery.stop();
+        gallery.updateMedia(json_val);
+        gallery.start();
+      });
+    }, 60 * 1000 * 5);
 
-    var playlistMessageBus = castReceiverManager.getCastMessageBus(
-                'urn:x-cast:com.purebarre.gallery',
-                cast.receiver.CastMessageBus.MessageType.JSON);
 
-    playlistMessageBus.onMessage = function(event) {
-                console.log('Controller message: ' + JSON.stringify(event));
-
-                switch(event.data.type) {
-                    case "REFRESH":
-                      $.ajax("/media").done(function(val) {
-                        json_val = JSON.parse(val);
-                        gallery.stop();
-                        gallery.updateMedia(json_val);
-                        gallery.start();
-                      });
-                      break;
-                    case "PLAYFROM":
-                      gallery.playFrom(event.data.id);
-                }
-            };
-
-    console.log(window.navigator.appVersion.match(/Chrome\/(.*?) /)[1]);
+  //   var playlistMessageBus = castReceiverManager.getCastMessageBus(
+  //               'urn:x-cast:com.purebarre.gallery',
+  //               cast.receiver.CastMessageBus.MessageType.JSON);
+  //
+  //   playlistMessageBus.onMessage = function(event) {
+  //               console.log('Controller message: ' + JSON.stringify(event));
+  //
+  //               switch(event.data.type) {
+  //                   case "REFRESH":
+  //                     $.ajax("/media").done(function(val) {
+  //                       json_val = JSON.parse(val);
+  //                       gallery.stop();
+  //                       gallery.updateMedia(json_val);
+  //                       gallery.start();
+  //                     });
+  //                     break;
+  //                   case "PLAYFROM":
+  //                     gallery.playFrom(event.data.id);
+  //               }
+  //           };
+  //
+  //   console.log(window.navigator.appVersion.match(/Chrome\/(.*?) /)[1]);
   };
 </script>
   </body>
